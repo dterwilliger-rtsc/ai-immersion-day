@@ -1,55 +1,66 @@
 # AI Immersion Day — Quest Log
 
-Evidence repo for Rentsync's AI Immersion Day hackathon.
-One directory per quest: the prompt used, the connectors involved, the output
-produced, and an honest note on what the AI actually added.
+Single log for Rentsync's AI Immersion Day (2026-09-10). One folder per quest under
+[`quests/`](quests/): the prompt used, the output produced, and an honest note on what
+the AI actually added — including where it fell short.
 
-Started 2026-09-10, day two on the job.
-
----
-
-## Ground rule I set for myself
-
-Every quest gets run against **real work**, not a demo scenario. That means the
-raw output usually contains colleague names, email addresses and internal
-detail — so every artifact in this repo is redacted before it lands here, and
-unredacted working files are gitignored. The structure and reasoning are
-untouched; only identifying and internal-confidential detail is generalized.
+Started on day two of the job, which is why several quests use onboarding as their
+real-work subject matter.
 
 ---
 
 ## Quests
 
-### 1. Meeting Prep — 25 pts · Automations & Integrations
-**Goal:** the connector habit with the highest repeat value — ten minutes saved
-before every meeting, and the follow-up drafted after.
+| Quest | Category | Pts | Folder | Status |
+|---|---|---|---|---|
+| [Meeting Prep](quests/meeting-prep/) | Automations & Integrations | 25 | `quests/meeting-prep/` | ✅ Logged |
+| [Prompt Like a Pro](quests/prompt-like-a-pro/) | Discovery | 10 | `quests/prompt-like-a-pro/` | ✅ Logged |
 
-| | |
-|---|---|
-| Prompt | [`prompts/01-meeting-prep.md`](prompts/01-meeting-prep.md) |
-| Output | [`output/meeting-brief-redacted.md`](output/meeting-brief-redacted.md) |
-| Connectors | Google Calendar, Gmail, Google Drive, Slack |
-| Model | Claude Opus 5 via Claude Code |
-| Status | ✅ Complete |
+**Running total: 35 pts**
 
-**One line:** Claude read my next meeting, opened the PDF attached to the invite
-to extract the real agenda, cross-referenced Slack and Drive for who I'd be
-talking to, and flagged a reporting-line contradiction across three systems plus
-an un-RSVP'd session next week.
+### Meeting Prep — 25 pts
+Claude read the next real meeting via Google Calendar, opened the PDF attached to the
+invite to extract the actual agenda, cross-referenced Slack and Drive on the attendees,
+and flagged an un-RSVP'd session later in the week.
 
-**Honest assessment:** the calendar layer alone would have produced a
-restatement of the invite. The value was entirely in the Drive/Gmail/Slack
-context layer — reading the attachment, and dating the organizer's own start
-from a Slack announcement.
+The context layer is what mattered: the calendar alone would have produced a
+restatement of the invite. It also **got a status claim wrong** — misattributing an
+RSVP between two events — which is corrected in place and kept visible, because that
+turned out to be the most transferable lesson of the quest.
 
-It also got something wrong: it misattributed an RSVP status between two events
-on the same calendar. Corrected in the output, with the correction left visible
-rather than rewritten away. See the closing sections of the output for both.
+→ [prompt](quests/meeting-prep/prompt.md) · [output](quests/meeting-prep/brief-redacted.md)
+
+### Prompt Like a Pro — 10 pts
+Same task (a first-day Slack intro) run twice: one line, then role + context + task +
+example + constraints. The example field did more work than the role line.
+
+Both outputs still contain placeholders, so the structured prompt produced a better
+*scaffold*, not a finished post — noted rather than glossed over.
+
+→ [prompt](quests/prompt-like-a-pro/prompt.md) · [one-line output](quests/prompt-like-a-pro/output-one-line.md) · [structured output](quests/prompt-like-a-pro/output-structured.md)
 
 ---
 
-## Setup notes
+## Ground rules I set for myself
 
-No connector configuration was needed — Google Calendar, Gmail, Drive and Slack
-were already authorized on the account. Worth knowing for anyone else running
-these quests: check before you spend time on setup.
+**Real work, not demo scenarios.** Every quest runs against something actual — my real
+calendar, my real inbox. That means raw output contains colleague names, email
+addresses and internal detail, so every artifact here is redacted before it lands, and
+unredacted working files are gitignored (`*.local.md`). Structure and reasoning are
+untouched; only identifying and internal-confidential detail is generalized.
+
+**Failures stay in.** Where the AI got something wrong, the correction is visible rather
+than rewritten away. A log of only successes wouldn't be much use to anyone reading it
+later, including me.
+
+---
+
+## Setup notes for anyone else running these
+
+- **Connectors:** Google Calendar, Gmail, Drive and Slack were already authorized on my
+  account — check before spending time on setup.
+- **The main hackathon project needs no Git repo.** Per `#ai-immersion-day`, the core
+  project publishes to Harbour with contributors added there. This repo is for the
+  individual side quests.
+- **Homebrew on a fresh Mac:** if `gh` and friends aren't found, `brew shellenv` in
+  `~/.zprofile` only loads for *login* shells. Add it to `~/.zshenv` too.
