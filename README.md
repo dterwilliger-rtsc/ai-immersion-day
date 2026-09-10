@@ -17,8 +17,9 @@ real-work subject matter.
 | [Prompt Like a Pro](quests/prompt-like-a-pro/) | Discovery | 10 | `quests/prompt-like-a-pro/` | ✅ Logged |
 | [Sheet Whisperer](quests/sheet-whisperer/) | Automations & Integrations | 38 | `quests/sheet-whisperer/` | ✅ Logged |
 | [Morning Nudge](quests/morning-nudge/) | Automations & Integrations | 75 | `quests/morning-nudge/` | ✅ Logged |
+| [Research Assistant](quests/research-assistant/) | Automations & Integrations | 38 | `quests/research-assistant/` | ✅ Logged |
 
-**Running total: 148 pts** (a 1.5x multiplier was live for the later quests — Sheet Whisperer 25→38, Morning Nudge 50→75)
+**Running total: 186 pts** (a 1.5x multiplier was live for the later quests — Sheet Whisperer 25→38, Morning Nudge 50→75, Research Assistant 25→38)
 
 ### Meeting Prep — 25 pts
 Claude read the next real meeting via Google Calendar, opened the PDF attached to the
@@ -31,6 +32,29 @@ RSVP between two events — which is corrected in place and kept visible, becaus
 turned out to be the most transferable lesson of the quest.
 
 → [prompt](quests/meeting-prep/prompt.md) · [output](quests/meeting-prep/brief-redacted.md)
+
+### Research Assistant — 38 pts
+A sourced briefing on MCP authorization — specifically, how you restrict which AI agents
+can connect to a product's MCP server. Commissioned against a real internal program doc
+that leaves exactly that question open.
+
+The instruction that did the work was *"verify that claim — don't take it at face value."*
+The internal doc cites a named vendor as the model for its planned design; two source
+fetches showed the vendor does close to the **opposite**, and the vendor's own overview
+page omits authentication entirely, which is plausibly how the claim got made in good
+faith. A second finding: the MCP spec has no agent-identity primitive at all, and
+*recommends* Dynamic Client Registration so clients self-register without user
+interaction — so an allowlist isn't a deferred admin feature, it's an authorization-server
+policy decision.
+
+Two things worth recording about the method. A source I was asked to include **couldn't be
+found** from a description — I said so and left it out rather than paraphrasing something
+plausible; supplied as a URL later, it turned out to be about a different topic than either
+of us expected, so the guess would have been wrong on substance. And the most useful line
+in the briefing came from the **lowest-ranked** source: source ranking should govern how
+much weight a claim carries, not whether it's worth reading.
+
+→ [briefing](quests/research-assistant/briefing.md) · [prompt & method](quests/research-assistant/prompt.md) · [one-paragraph team version](quests/research-assistant/team-post.md)
 
 ### Morning Nudge — 75 pts
 A scheduled task that DMs me on Slack every weekday at 8am with every mention and DM
