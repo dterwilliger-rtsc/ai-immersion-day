@@ -34,27 +34,26 @@ turned out to be the most transferable lesson of the quest.
 → [prompt](quests/meeting-prep/prompt.md) · [output](quests/meeting-prep/brief-redacted.md)
 
 ### Research Assistant — 38 pts
-A sourced briefing on MCP authorization — specifically, how you restrict which AI agents
-can connect to a product's MCP server. Commissioned against a real internal program doc
-that leaves exactly that question open.
+A sourced briefing on AI lead scoring for rental leads, commissioned and delivered inside
+the hour my team was choosing its build project in Slack — four of six had said they
+wanted that project and nobody had looked into the problem yet.
 
-The instruction that did the work was *"verify that claim — don't take it at face value."*
-The internal doc cites a named vendor as the model for its planned design; two source
-fetches showed the vendor does close to the **opposite**, and the vendor's own overview
-page omits authentication entirely, which is plausibly how the claim got made in good
-faith. A second finding: the MCP spec has no agent-identity primitive at all, and
-*recommends* Dynamic Client Registration so clients self-register without user
-interaction — so an allowlist isn't a deferred admin feature, it's an authorization-server
-policy decision.
+The load-bearing instruction was *"chase every statistic to its origin and tell me who
+published it and whether they were selling something."* It inverted the conclusion. The
+plan was to weight signals by the industry's conversion benchmarks; there are no credible
+public ones. Speed-to-lead, the five-minute window, the 65–80% hourly drop-off, a 44.8%
+lift — every figure traces to a company selling an AI leasing product, and the one trade
+article promising a research review cites two vendors with no methodology and leaves its
+headline number uncited. Reporting the absence beat laundering the numbers.
 
-Two things worth recording about the method. A source I was asked to include **couldn't be
-found** from a description — I said so and left it out rather than paraphrasing something
-plausible; supplied as a URL later, it turned out to be about a different topic than either
-of us expected, so the guess would have been wrong on substance. And the most useful line
-in the briefing came from the **lowest-ranked** source: source ranking should govern how
-much weight a claim carries, not whether it's worth reading.
+The finding I wasn't looking for was regulatory: US fair-housing guidance covers
+*"limiting or denying consumers information about housing opportunities"* — which is what
+deprioritising a lead does — and names third-party technology providers as responsible
+parties. In Ontario it's more direct still, since receipt of public assistance is itself a
+protected ground covering access to rental opportunities. That turns "explain the score"
+from a feature into the design's foundation.
 
-→ [briefing](quests/research-assistant/briefing.md) · [prompt & method](quests/research-assistant/prompt.md) · [one-paragraph team version](quests/research-assistant/team-post.md)
+→ [briefing](quests/research-assistant/briefing.md) · [prompt & method](quests/research-assistant/prompt.md) · [team version](quests/research-assistant/team-post.md)
 
 ### Morning Nudge — 75 pts
 A scheduled task that DMs me on Slack every weekday at 8am with every mention and DM

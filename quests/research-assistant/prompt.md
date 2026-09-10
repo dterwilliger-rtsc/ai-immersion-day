@@ -3,89 +3,92 @@
 > Quest: commission a sourced briefing on a topic your team genuinely needs — then
 > actually share it.
 
-## Topic and why it qualifies
+## Topic, and why it qualified
 
-The quest asks for a real audience, not curiosity. This one had a document waiting for
-it: an internal program doc for the MCP work I've been brought on to contribute to,
-explicitly written as an orientation for *"whoever picks up this project next."* It ends
-with a list of deliberately unanswered questions.
+The quest insists on a real audience rather than curiosity. This had the most real
+audience available: **my team was choosing its build project in Slack while I researched.**
 
-So the audience is the program, and the brief was to close one of its open questions.
-
-## Inputs
-
-1. **The internal program doc** — where we stand on MCP, what's planned, what's
-   unresolved.
-2. **A specific X post** on adding MCP to a product, which I was asked to fold in.
-3. Whatever primary sources the research turned up.
+Four of six members had said they wanted the AI Lead Scoring Service within about ten
+minutes, one had proposed a vote, and nobody had looked into the problem itself. A
+briefing delivered inside that window is decision input. The same briefing delivered
+tomorrow is trivia.
 
 ## The prompt
 
 ```
-Act as a research assistant. I need a sourced briefing for my team on MCP
-authorization — specifically the question of restricting which AI agents can
-connect to a product's MCP server.
+Act as a research assistant. My team is deciding right now whether to build an AI
+lead scoring service for rental leads — it ranks incoming renter enquiries by how
+serious they look, so staff follow up on the best ones first.
 
-Start from this internal doc [link]. It claims our planned approach is "modeled
-on how Chargebee handles this for their own MCP." Verify that claim against
-primary sources — don't take it at face value.
+Research what we should know before starting. Two things specifically:
+what behavioural signals actually predict that a rental lead converts, and what
+could go wrong with a system that decides which renters get followed up.
 
-Structure the output. Separate what is established fact from what is my
-interpretation. Rank every source by reliability, and flag anything resting on a
-single report or that you could not verify. If you cannot find something, say so
-rather than approximating it.
+Search for current sources — don't answer from memory. Chase every statistic to
+its origin and tell me who published it and whether they were selling something.
+Rank sources by reliability, separate established fact from your own
+recommendation, and flag anything you couldn't verify. If the evidence for
+something is weak, say that instead of repeating it.
 ```
 
-The load-bearing instructions were the last two sentences. "Verify that claim" is what
-produced the main finding; "if you cannot find something, say so" is what stopped a
-requested source being paraphrased from memory when it couldn't be located.
+The instruction that did all the work: **"chase every statistic to its origin and tell me
+who published it and whether they were selling something."** That single clause inverted
+the briefing's conclusion.
 
 ## What happened
 
-**The internal doc's central citation was wrong.** It says the plan is an admin-registered
-allowlist with a unique credential per approved agent, "modeled on Chargebee." Chargebee's
-actual documented model is close to the inverse: API keys capped at five per server with
-no per-tool scoping, or OAuth with explicit guidance to *share one client ID across all
-users of the same MCP client* and derive access from the human's permissions. No
-named-agent registry exists.
+**The plan was to collect the industry's conversion benchmarks and weight signals by
+them. There are no credible public benchmarks.** Every statistic — speed-to-lead as the
+top predictor, the five-minute window, a 65–80% drop-off after an hour, 44.8% conversion
+lift — traces back to a company selling an AI leasing product. The one piece of trade
+press promising a research review attributed its numbers to two vendors with no
+methodology or sample size, left its central figure uncited entirely, and raised no
+caveats.
 
-Two fetches established that. The vendor's own MCP overview page contains no
-authentication detail at all — which is a plausible route by which the claim got made in
-good faith.
+Reporting that absence turned out to be more useful than repeating the numbers would have
+been.
 
-**The spec has no agent-identity primitive**, and one part of it pushes against an
-allowlist: clients and authorization servers *SHOULD* support Dynamic Client Registration
-so clients can obtain client IDs "without user interaction." So the allowlist isn't a
-deferred admin feature, it's an authorization-server policy decision — cheaper before
-write-capable releases than after.
+**The finding I wasn't looking for was the regulatory one.** US fair-housing guidance from
+2024 covers the targeting and delivery of housing opportunities — violations include
+"limiting or denying consumers information about housing opportunities" — which is a
+description of deprioritising a lead. It names third-party technology providers as
+responsible parties, not only landlords. And the Canadian position is more directly
+applicable, because receipt of public assistance is itself a protected ground in Ontario
+housing, with protection extending to *access to rental opportunities*.
 
-**The requested X post initially could not be found.** I searched, failed, and said so
-rather than reconstructing it. Once the URL was supplied it turned out to be about
-something different from what either of us expected — not one-command installation, but
-generating an entire MCP surface from an existing API with one agentic prompt. The summary
-I'd have guessed at would have been wrong on substance, not just attribution.
-
-And its most useful line argues **against** our own plan: mirror the existing API's
-analytics and audit logging from the start rather than deferring them. That came from the
-lowest-ranked source in the briefing.
+That reframes the build: "explain what drove the score" stops being a nice feature and
+becomes the thing that makes the system defensible and debuggable.
 
 ## Spot-checks
 
-Two, per the quest. The first changed the briefing's conclusion; the second surfaced the
-Dynamic Client Registration tension that no secondary source had mentioned. Both are
-documented in the briefing itself.
+Two, per the quest, and the first one changed the recommendation:
+
+1. **Chased the conversion statistics.** Fetched the trade-press "research" review and
+   found vendor attribution with no methodology. Became Finding 1 and killed the original
+   plan.
+2. **Checked scope of the fair-housing guidance** — whether it covers lead prioritisation
+   or only application screening. It covers targeting and delivery. Then checked the
+   Canadian equivalent, which was sharper rather than softer.
 
 ## Output
 
-→ [`briefing.md`](briefing.md) — six findings, confidence marked per finding, four-tier
-source ranking, rejected sources listed with reasons, and two flagged unverified claims.
+→ [`briefing.md`](briefing.md) — five findings, confidence marked individually, a
+build-time do/don't table, four-tier source ranking with vendor sources explicitly
+rejected, and four flagged unverified claims.
 
-→ [`team-post.md`](team-post.md) — the one-paragraph version for the team channel.
+→ [`team-post.md`](team-post.md) — the short version for the team channel.
+
+## Note on a discarded first attempt
+
+I originally ran this quest on a different topic — MCP authorization — and produced a
+longer briefing that was genuinely dense and not what the team needed. It was scrapped and
+replaced with this. The lesson is the quest's own framing: *"it needs a real audience, not
+just curiosity."* The first topic was interesting to me. This one was in front of six
+people making a decision that hour.
 
 ## Go Further (not done)
 
-The quest suggests scheduling a monthly refresh. Deliberately skipped: a briefing whose
-main value is a one-time correction to an internal document doesn't benefit from
-re-running monthly. The MCP spec is versioned and worth re-reading on release, which is an
-event trigger, not a calendar one. Noting the decision rather than automating for the
-points.
+The quest suggests a monthly refresh. Skipped deliberately: this briefing's value is
+time-boxed to a decision being made today. The regulatory half is worth re-checking when
+guidance changes — an event trigger, not a calendar one. Recording the decision rather
+than scheduling something to earn the mention.

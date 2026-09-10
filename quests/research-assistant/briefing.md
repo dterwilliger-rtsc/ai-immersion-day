@@ -1,325 +1,247 @@
-# Briefing — MCP authorization, agent allowlisting, and one-command connection
+# Briefing — AI lead scoring for rental leads
 
-**Commissioned:** 2026-09-10 · **Audience:** the team picking up our MCP program
-**Status:** internal briefing. Findings are sourced; speculation is marked as such.
-
-> **Redaction note:** this is the public copy. The internal program document that prompted
-> the briefing is not linked or quoted beyond what's needed to state the finding. Release
-> contents and roadmap specifics are generalized.
+**For:** Team R5, deciding today which build project to take on
+**Question:** if we build the AI Lead Scoring Service, what should we know before we start?
+**Commissioned & delivered:** 2026-09-10, same hour — the team is choosing now
 
 ---
 
-## Why this briefing
+## Bottom line
 
-An internal program doc — explicitly written as an orientation for "whoever picks up this
-project next" — defers one operational question past MVP:
+Build it. But two things change how:
 
-> which AI agents are allowed to connect. In MVP the server is open to any AI client with
-> the account's URL and valid auth. Post-MVP, the plan is an allowlist: an admin registers
-> each approved agent and gets a unique credential for it — **modeled on how Chargebee
-> handles this for their own MCP.**
+1. **Ignore the industry's conversion statistics.** The evidence base is almost entirely
+   vendors marketing their own leasing products, and the numbers don't survive contact
+   with a citation check.
+2. **Score behaviour, not people.** A tool that decides which renters get followed up is
+   regulated in a way the project brief doesn't mention — and if Rentsync ships it to
+   clients, Rentsync is in scope, not just the landlord.
 
-That last clause is a checkable claim about a named vendor. So I checked it.
+The second point is the one worth the team's attention today, because it's cheap to design
+for now and expensive to bolt on.
 
 ---
 
-## Finding 1 — The cited precedent does not implement the design it's cited for
+## Finding 1 — The published evidence is vendor marketing, nearly all of it
 
-**Confidence: high.** Verified directly in Chargebee's own documentation.
+**Confidence: high.** This is a claim about sourcing, and I checked the sourcing.
 
-Chargebee offers external AI clients two authentication paths, and neither is an
-agent registry:
+Search results for what predicts rental lead conversion are dominated by companies that
+sell AI leasing assistants — EliseAI, Zuma, Perq, Leasey.AI, Dyverse, ApartmentList. The
+recurring claims:
 
-| Path | What it actually does |
+- "Speed-to-lead is the single biggest predictor of conversion"
+- "Leads contacted within five minutes are dramatically more likely to tour"
+- "Roughly a 65–80% drop-off in conversion likelihood after the first hour"
+- "44.8% higher lead-to-lease conversion" · "85% of operators increased conversion"
+
+I fetched the one piece of trade press that promised to review the research
+("What the Research on Lead Conversion Tells Us About AI's Role in Leasing", Propmodo).
+It attributes its figures to **Zuma** and **EliseAI** — both vendors — with, in each case,
+no publication date, no methodology and no sample size. The 65–80% drop-off figure carries
+**no citation at all.** The article raises **no caveats** about methodology, selection bias
+or confounders.
+
+The "80% of sales require five or more follow-ups / 44% of reps quit after one" pairing
+also appears with no attribution, and is generic sales-training folklore rather than
+anything about renting apartments.
+
+**So:** treat every conversion-lift percentage in this space as a marketing claim. Not
+necessarily false — plausibly directionally right — but not a number to design against or
+quote to a client.
+
+**What this means for a one-day prototype:** we cannot calibrate a model against
+"industry benchmarks," because there aren't credible public ones. Which is fine, and
+actually simplifies the build — see Finding 4.
+
+## Finding 2 — Prioritising leads is a regulated activity, and it reaches the vendor
+
+**Confidence: high.** Primary regulatory sources.
+
+The project brief frames this as an efficiency problem: effort goes to the wrong people.
+True. But the mechanism — some prospects get faster, better follow-up than others — is
+exactly what US fair-housing regulators have been looking at.
+
+**HUD's 2024 guidance** on the Fair Housing Act and AI covers not only application
+screening but the **targeting and delivery of housing opportunities**, with violations
+arising where these functions *"unlawfully discriminate on the basis of protected
+characteristics, such as limiting or denying consumers information about housing
+opportunities."*
+
+Deprioritising a lead *is* limiting that person's information about a housing opportunity.
+That places lead scoring inside the guidance's scope, not adjacent to it.
+
+Three specifics that matter for how we'd build:
+
+- **Liability follows the tool, not just the user.** *"Housing providers remain
+  responsible … even where they have outsourced screening to a third-party screening
+  company,"* and HUD asserts *"both housing providers and tenant screening companies have
+  a responsibility to avoid using AI in a discriminatory manner."* If Rentsync builds this
+  for clients, Rentsync is a named category of responsible party.
+- **Disparate impact, not intent.** A practice can be unlawful for its *effect*, whatever
+  was meant. HUD's framing requires ensuring *"algorithms are similarly predictive across
+  protected class groups and making adjustments to correct for any disparities in
+  predictiveness"* — a much stronger standard than "we didn't use race as a feature."
+- **Testing is an expectation, not a nicety.** The guidance calls for *"regular end-to-end
+  testing of advertising systems to ensure that any discriminatory outcomes are detected"*
+  and assessment of *"less discriminatory alternatives."*
+
+**The Canadian angle is sharper, not softer.** Our market is Canadian. Under the **Ontario
+Human Rights Code**, **receipt of public assistance** is itself a protected ground in
+housing, and the protection explicitly extends to **access to rental opportunities** — not
+only to tenancy decisions. So a scoring model that quietly downranks assistance-linked
+signals is exposed under Ontario law directly, without needing a disparate-impact theory.
+
+## Finding 3 — The cautionary case is a bug, not malice — and that's the point
+
+**Confidence: medium-high.** Widely reported; I did not read the court filings.
+
+The most-cited example in this area is **SafeRent Solutions**. A Black applicant with a
+housing voucher and 16 years of on-time payments was scored out. The reported cause was a
+**design flaw**: the algorithm didn't properly account for housing vouchers. Because voucher
+recipients are disproportionately Black and Hispanic, a facially neutral omission produced
+a racially disparate outcome.
+
+Nobody set out to discriminate. Someone failed to model a payment source. That is precisely
+the failure mode available to a hackathon prototype that ranks leads on plausible-sounding
+signals, and it's why Finding 4 is a design constraint rather than a compliance appendix.
+
+## Finding 4 — What this implies for the build
+
+**Confidence: this is my recommendation, not a finding.** Marked as such.
+
+The brief asks *"How could the assessment inform follow-up without making inappropriate
+assumptions?"* — and it's the question with the most design leverage in it.
+
+**Score actions the prospect chose to take. Don't score who they appear to be.**
+
+| Use — chosen behaviour | Avoid — attributes and proxies |
 |---|---|
-| **API key** | Capped at **5 keys per server**. A key "grants access to all enabled tools in this server" — no per-tool scoping. Sent as `Authorization: Bearer`. Positioned for "server-to-server integrations, internal automations, trusted development environments." |
-| **OAuth** | Access is scoped by "the signed-in Chargebee user's access level in Chargebee" — i.e. by the *human*, not the agent. |
+| Requested a tour, proposed a specific time | Income, employment, credit, benefits |
+| Replied to outreach; replied again | Neighbourhood, postal code, building searched |
+| Asked a specific question (parking, pets, lease length) | Name, language of inquiry, inferred demographics |
+| Viewed multiple units, returned across sessions | Household size, family status, age |
+| Completed a form rather than abandoning it | Price band as a stand-in for means |
 
-The OAuth guidance is the direct contradiction. Chargebee's docs say:
+Postal code deserves a flag of its own: it's the classic proxy, and in housing it carries
+almost the full signal of protected characteristics.
 
-> "Use the same OAuth client ID for users of the same MCP client. For example, if you have
-> 100 Claude Code users, you can generate one OAuth client ID and share it with all 100
-> users."
+Three practices worth building in from the first commit, all cheap at prototype scale:
 
-That is deliberately **one shared credential per client type**, with authorization derived
-from each human's existing permissions. The internal doc proposes the inverse — a unique
-credential per registered agent. Chargebee's model is per-*user* authorization; the doc
-describes per-*agent* identity.
+1. **Reasons, always.** The brief already asks the score to explain what drove it. Treat
+   the explanation as the product. A score you can't explain is one you can't defend and
+   can't debug — and it's what makes the SafeRent failure discoverable.
+2. **Floor, don't gate.** Frame output as *ordering* the queue, never as suppressing a
+   lead. Every lead still gets contacted; scoring changes sequence, not eligibility. This
+   is a one-line product decision that removes most of the regulatory exposure.
+3. **Test predictiveness parity, not just accuracy.** Generate synthetic cohorts that
+   differ *only* on a protected-ground-linked attribute and confirm scores don't separate.
+   That directly answers *"How would you know if the scoring is useful?"* — usefulness is
+   accuracy **and** parity.
 
-There is no documented admin capability to register or allowlist specific named agents.
+On the brief's other questions:
 
-**A secondary observation worth flagging:** Chargebee's own docs are inconsistent about
-this. The MCP overview page contains no authentication detail at all — its only security
-guidance is "connect only trusted clients and review actions before they run." The auth
-detail lives on individual server pages. Anyone who read the overview and stopped would
-come away with a different impression than the one the per-server pages support. That is a
-plausible route by which the internal doc's claim got made in good faith.
+- **New lead, limited information** → return "insufficient signal," not a low score. A
+  cold lead and a bad lead are different states, and collapsing them penalises everyone
+  who just arrived.
+- **Should signals carry different weights?** Start with transparent additive weights we
+  can read and argue about. A learned model on synthetic data would only be learning our
+  own assumptions with extra steps.
+- **How do we judge it?** Decide before generating data — the brief says so too. Cheapest
+  credible approach: hand-label ~30 synthetic leads by intent, then check the ranking
+  agrees, plus the parity test above.
 
-## Finding 2 — MCP has no concept of agent identity, and one part of the spec works against it
+## Finding 5 — Synthetic data is a feature of this project, not a compromise
 
-**Confidence: high.** Normative language, primary source.
+**Confidence: high** (project brief) / **recommendation** (the rest).
 
-The specification models a protected MCP server as an **OAuth 2.1 resource server**. Its
-requirements are about *audience binding*, not about who or what the client is:
-
-- MCP servers **MUST** implement OAuth 2.0 Protected Resource Metadata (RFC 9728).
-- MCP clients **MUST** implement Resource Indicators (RFC 8707) and send a `resource`
-  parameter identifying the target server — "regardless of whether authorization servers
-  support it."
-- MCP servers **MUST** validate that tokens were issued specifically for them, and **MUST
-  NOT** accept or transit any other tokens.
-
-Nothing in that identifies the *agent application*. A token proves a user authorized
-access to this server. It does not say "and Claude Code was the thing asking."
-
-Worse for an allowlist, the spec pushes the opposite way:
-
-> MCP clients and authorization servers **SHOULD** support the OAuth 2.0 Dynamic Client
-> Registration Protocol (RFC 7591) to allow MCP clients to obtain OAuth client IDs
-> **without user interaction.**
-
-Self-registration without user interaction is close to the definition of what an allowlist
-exists to prevent. The escape hatch is one sentence in the same section:
-
-> "Authorization servers can implement their own registration policies."
-
-**So the conclusion is architectural, not a feature request:** an agent allowlist is not
-something MCP provides and not really an "admin screen" either. It is a policy decision at
-the authorization server — specifically, declining to support open Dynamic Client
-Registration and requiring pre-registration instead. That belongs to whoever owns the
-authorization server, and it is materially cheaper to decide before write-capable releases
-than to retrofit after.
-
-## Finding 3 — Token passthrough is a named vulnerability that applies directly here
-
-**Confidence: high.** Primary source, normative.
-
-If the MCP server sits in front of existing internal APIs — which is the obvious way to
-build one on top of an existing platform — the spec is explicit:
-
-> "If the MCP server makes requests to upstream APIs, it may act as an OAuth client to
-> them. The access token used at the upstream API is a **separate** token, issued by the
-> upstream authorization server. The MCP server **MUST NOT** pass through the token it
-> received from the MCP client."
-
-The spec names the failure mode this prevents: the **confused deputy problem**, where a
-downstream API wrongly trusts a forwarded token as validated. It also requires that proxy
-servers using static client IDs obtain user consent for each dynamically registered client.
-
-**Concrete thing to verify in the MVP:** that inbound client tokens are exchanged for
-separate upstream credentials rather than forwarded. This is cheap to confirm now and
-expensive to discover later — and it is a read-only-release question too, not only a
-write-release one.
-
-## Finding 4 — Read-only first is well-supported by the spec's own posture
-
-**Confidence: medium-high.** Interpretation of primary sources, not a direct quote.
-
-The staged approach — a small read-only slice first, writes later — lines up with where the
-specification concentrates its warnings. The security considerations are overwhelmingly
-about token misuse, audience confusion and privilege escalation, and every one of those
-gets more consequential the moment tools can mutate data. Chargebee's own framing agrees
-from the operator side: "You are responsible for any actions AI clients perform through
-Chargebee MCP servers, **including write actions.**"
-
-This is the one finding where I am reasoning rather than quoting. Recorded as such.
-
-## Finding 5 — Connecting customers: the obvious distribution tool is the wrong one
-
-**Confidence: high** on both halves.
-
-**MCPB (MCP Bundles) does not apply.** It is the official one-click install format — zip
-archives with a `manifest.json`, modeled on `.crx`/`.vsix`, built via `mcpb init` and
-`mcpb pack`. But it is **local-only**: "zip archives containing a local MCP server," with
-no remote or HTTP support. For a hosted, per-account product MCP, MCPB is a dead end.
-Useful negative result — it's the first thing you'd reach for.
-
-**The real one-command path for a remote server is client configuration, not packaging.**
-`npx add-mcp <url>` writes MCP config across 24 coding agents (Claude Code, Cursor, VS
-Code, Codex, Copilot CLI, Zed, Windsurf and others) and explicitly supports remote
-streamable-HTTP and SSE transports:
-
-```
-npx add-mcp https://mcp.example.com/mcp
-npx add-mcp https://mcp.example.com/mcp -a cursor -a claude-code
-```
-
-**Cheap, high-leverage recommendation:** publish the canonical server URL plus a
-copy-pasteable one-liner in the customer-facing docs. Note the spec's guidance that clients
-**SHOULD** send the most specific canonical URI, without a trailing slash — so document the
-exact string rather than letting customers guess. This is a documentation task, not
-engineering work, and it is the difference between "there is an MCP" and "customers connect
-to it."
-
-## Finding 6 — The "single prompt" claim: what it gets right, and where it collides with Findings 1–3
-
-**Confidence: mixed — see the flags.** Primary source for the author's own method; unverified as an engineering claim.
-
-A widely-shared X post from a bootstrapped-SaaS practitioner (2026-08-23, ~53K views)
-argues that *"the complexity of adding an MCP to your product (if you already have some
-sort of API) is a single prompt,"* and publishes the prompt verbatim. It is not about
-one-command *installation* — it's about generating the entire MCP surface from an existing
-API with one agentic coding instruction. Five things in it map directly onto our program:
-
-**Where it's genuinely useful:**
-
-1. **"Aiming for feature parity with our existing API implementation."** This is the same
-   logic as carving releases out of an existing tool inventory, and it's a good sanity
-   check: if a tool exists in the API and not the MCP, that gap should be deliberate.
-2. **"Create MCP management, analytics, and log features analogous to our API
-   implementation."** This is the most valuable line in the post for us, and it directly
-   contradicts our own plan. Our doc defers usage limits and audit logging as
-   "day two" concerns. He treats them as **in-scope from the start, by mirroring what the
-   existing API already has.** That reframing is strong: if the platform already has API
-   analytics and logging, the MCP not having them isn't a deferral, it's a regression —
-   and building alongside is cheaper than retrofitting.
-3. **"Pay special attention to how tools need to be configured, described, and tagged" for
-   plugin-store review.** A distribution channel our doc doesn't mention at all. If a
-   first-class listing in a model vendor's tool store is ever wanted, tool naming and
-   description conventions are cheaper to get right before Release 1 ships than after
-   customers depend on the names.
-4. **"A dedicated landing page for agentic website visitors that has an easy path for them
-   to quickly implement the MCP."** Independent arrival at the same recommendation as
-   Finding 5 — the adoption bottleneck is documentation and a copy-pasteable path, not
-   packaging.
-5. **"First create a scope document and have me verify it, then implement."** Plan-then-
-   execute, with an explicit instruction to ask questions when uncertain rather than guess.
-
-**Where applying it here would go wrong:**
-
-The prompt says *"use the OAuth implementation that is closest to our existing
-authentication stack."* For most products that's pragmatic. For an MCP server it is not
-sufficient, because the spec imposes requirements that "closest to what we already have"
-will not satisfy by accident — serving RFC 9728 Protected Resource Metadata, validating
-RFC 8707 audience claims, returning `WWW-Authenticate` on 401, and **not** passing the
-inbound token through to upstream APIs (Findings 2 and 3). An agent following that
-instruction against an existing session-auth stack can produce something that authenticates
-users correctly and still fails the spec's MUSTs.
-
-It also can't decide the allowlist question. "Closest to our existing stack" has no opinion
-on whether to support open Dynamic Client Registration — which Finding 2 identifies as the
-actual decision point.
-
-**Net:** the post is a good scaffold and a genuinely useful corrective on logging and
-analytics. It is not a substitute for the authorization design, and the two findings
-should be read together — his prompt for scope and sequencing, the spec for the auth layer.
+The brief encourages synthetic data explicitly. Worth stating plainly why that's a real
+advantage here rather than a shortcut: we can construct cohorts that differ on exactly one
+variable, which is the only clean way to run the parity test in Finding 4 — and something
+you cannot do with historical data. It also means no client PII in a hackathon prototype,
+which is its own reason.
 
 ---
 
 ## Source reliability ranking
 
-As the quest requires — ranked, with single-source claims flagged.
+### Tier 1 — Primary regulatory sources
+1. **HUD 2024 guidance on the FHA, algorithms and AI** (as reported with direct quotation
+   by Consumer Financial Services Law Monitor). Basis for Finding 2. **Caveat: I read a law
+   firm's summary quoting the guidance, not HUD's original documents.** The quotes are
+   presented as verbatim; I did not verify them against the source PDFs.
+2. **Ontario Human Rights Commission — policy on human rights and rental housing.** The
+   authority for receipt of public assistance being a protected ground and for protection
+   extending to access to rental opportunities. Primary, and the most directly applicable
+   source for a Canadian product.
 
-### Tier 1 — Normative primary sources
-1. **MCP specification, Authorization (2025-06-18)** — `modelcontextprotocol.io`. RFC-backed
-   normative language (MUST/SHOULD). The authority for Findings 2, 3 and part of 5.
-   Underlying: OAuth 2.1 draft-13, RFC 8707, RFC 9728, RFC 7591, RFC 9068.
-2. **`modelcontextprotocol/mcpb`** — official MCP-org repository. Authority for MCPB being
-   local-only.
+### Tier 2 — Legal and civil-rights commentary
+3. Georgetown Law Poverty Journal; The Leadership Conference (civilrights.org) on AI and
+   tenant screening. Advocacy-aligned — directionally reliable on the SafeRent facts,
+   which are widely and consistently reported, but they argue a position.
 
-### Tier 2 — Vendor primary documentation
-3. **Chargebee MCP docs (per-server pages)** — authoritative *about Chargebee*, and the
-   basis for Finding 1. Caveat applied: **internally inconsistent** across pages, and
-   vendor docs describe intent as much as behaviour. I did not test the API.
+### Tier 3 — Trade press
+4. **Propmodo.** Used as *evidence about the evidence base* — its own sourcing is what
+   Finding 1 rests on. Not cited for any factual claim about conversion.
 
-### Tier 3 — Third-party tooling
-4. **`neondatabase/add-mcp`** — a real, specific repository, but a vendor-authored tool.
-   Its client list and transport support are taken **from its own README and not
-   independently tested.** Treat the "24 clients" figure as a claim, not a measurement.
+### Rejected — not used for any claim
+5. **Vendor blogs** (EliseAI, Zuma, Perq, Leasey.AI, Dyverse, ApartmentList). Every
+   conversion statistic traces back to one of these, and each sells a product whose value
+   the statistic demonstrates. Named in Finding 1 as the subject, never used as a source.
 
-### Tier 4 — Practitioner opinion
-5. **Arvid Kahl, X post, 2026-08-23** — a credible practitioner (bootstrapped SaaS
-   founder, builds with agentic tooling daily) publishing his own method. It is a
-   **primary source for what he does** and a reasonable scaffold. It is **not evidence**:
-   a single self-reported anecdote, no data, no named product outcome, and the author's own
-   sign-off is "(Dictated but not read 🤣)". Weight it as an experienced opinion, which is
-   how it's used in Finding 6 — for scope and sequencing, never for the auth layer.
-
-### Rejected — not cited
-- **StackOne's Chargebee connector page** — third-party wrapper marketing. It was the
-  source of the phrase "each user is isolated via `origin_owner_id`," which describes
-  *StackOne's* product, not Chargebee's MCP. Discarded to avoid attributing a reseller's
-  architecture to the vendor.
-- **Several "MCP Server Complete Guide (2026)" blog results** — SEO content farms with no
-  identifiable authorship. Not used for any claim.
-
-### ⚠️ Flagged: single-source and unverified
-- **"OAuth 2.1 authentication support is coming soon to Chargebee."** Appeared in a search
-  result summary. **I could not find it on the Chargebee page itself.** Single-source,
-  unverified — do not plan around it.
-- **"95% of the way there."** The X post's central quantitative claim about how much of an
-  MCP implementation a single prompt delivers. **Self-reported, single-source, no
-  supporting detail, and not verified against any shipped product.** The author himself
-  scopes it: "The rest is some manual testing, deploying, and telling your customers you
-  have an MCP now." Do not plan a schedule around this number.
-- **Search-and-retrieval note:** my own initial search for this post **failed** — I could
-  not find it from a description alone, and reported that rather than paraphrasing a
-  half-remembered version. It entered the briefing only once the exact URL was supplied.
-  Worth recording, because "the researcher could not find the thing you remembered" is a
-  real outcome, and inventing a plausible summary would have been the easy failure here.
+### ⚠️ Flagged: unverified or single-source
+- **"Speed-to-lead is the single biggest predictor of conversion."** Repeated everywhere,
+  sourced nowhere I could find. Plausible; unproven. **Do not build the demo's headline
+  around it.**
+- **The "5 minutes" and "65–80% drop-off" figures.** No citation located in any source,
+  including the trade-press review. Probable origin is B2B sales-response research, not
+  rental housing — but I could not confirm that either way, so it stays flagged rather
+  than asserted.
+- **SafeRent specifics** (16 years of payments, the voucher-handling flaw). Consistently
+  reported across independent outlets, but I did not read primary filings.
+- **HUD quotations** — see Tier 1 caveat above.
 
 ### Spot-checks performed
-Two, as the quest requires — and the first one changed the briefing:
-1. **Chargebee auth model.** Fetched the vendor docs directly rather than trusting the
-   search summary. The overview page turned out to contain none of the relevant detail;
-   the per-server page contradicted the internal doc's characterization. This is Finding 1.
-2. **MCP authorization spec.** Fetched the normative page rather than relying on
-   recollection. It confirmed there is no agent-identity primitive and surfaced the
-   Dynamic Client Registration tension, which no secondary source had mentioned.
+Two, as the quest requires:
+1. **Chased the conversion statistics to their source.** Fetched the trade-press article
+   that promised a research review; found vendor attribution, no methodology, no sample
+   sizes, and one central figure with no citation at all. This produced Finding 1 and
+   changed the briefing's recommendation — the original plan was to *use* those benchmarks.
+2. **Checked whether US fair-housing guidance covers lead prioritisation or only
+   application screening.** It covers targeting and delivery of housing opportunities, and
+   names third-party technology providers as responsible parties. Then checked the
+   Canadian equivalent, which turned out to be more directly applicable, not less.
 
 ---
 
-## What I'd do with this
-
-1. **Correct the internal doc's Chargebee reference.** Not a nitpick — the design it
-   currently points at is the opposite of what the precedent does, and someone will build
-   from it.
-2. **Reframe the allowlist as an authorization-server policy decision**, and decide it
-   before write-capable releases rather than after.
-3. **Verify the MVP does token exchange, not passthrough.** One conversation, and the spec
-   is unambiguous that passthrough is forbidden.
-4. **Ship the one-liner in customer docs.** Near-zero cost, direct effect on adoption.
-5. **Open questions I could not close from public sources:** whether per-tool (not just
-   per-server) scoping is achievable on the intended auth path, and what audit-logging
-   granularity is expected — the internal doc lists usage limits and audit logging as "day
-   two" concerns, and nothing in the spec mandates either.
-
 ## Honest assessment
 
-The strongest result is a **correction**, not a discovery: an internal doc cites a vendor
-precedent that does not support the design attributed to it. That took two source fetches
-to establish and would have survived indefinitely otherwise, because the claim is plausible
-and the vendor's own overview page is silent enough to seem consistent with it.
+The useful output here is a **reframe**, not a data set. I set out to find what signals
+predict rental lead conversion so the team could weight them. That question has no credible
+public answer — the entire visible literature is vendors quoting themselves. Reporting the
+absence is more valuable than laundering their numbers into a briefing.
 
-The second strongest is a **correction in the other direction** — against our own plan.
-Finding 6 makes a better case than our doc does for building MCP analytics and audit
-logging alongside Release 1 rather than deferring them, on the straightforward grounds
-that the existing API already has them.
+The genuinely actionable finding is regulatory, and it wasn't what I went looking for: lead
+prioritisation sits inside fair-housing scope, liability reaches the vendor, and in Ontario
+the relevant protected ground applies to *access to opportunities* directly. That turns
+"explain the score" from a nice-to-have into the core of the design.
 
-The weakest part is Finding 4, which is my reading of where the spec puts its emphasis
-rather than anything it states. Marked accordingly.
+**Weakest points, stated plainly:** I read a law firm's summary of HUD's guidance rather
+than HUD's own documents, and I have not read the SafeRent filings. Both are load-bearing
+for Finding 2 and Finding 3, and both should be checked before any of this reaches a client
+conversation. For choosing a hackathon project this afternoon, they're sound enough.
 
-Two process notes worth keeping, since both are about the limits of this kind of research:
-
-- **I could not find the requested X post from a description.** I said so and excluded it
-  rather than paraphrasing something plausible. It was only incorporated once the exact URL
-  was provided — and when it arrived, it turned out to be about something different from
-  what either of us expected (generating an MCP from an existing API, not one-command
-  installation). The guess I would have written would have been wrong on the substance,
-  not just the citation.
-- **The most useful single line in the whole briefing** — mirror the existing API's
-  analytics and logging instead of deferring them — came from the Tier 4 source, the
-  lowest-ranked one. Source ranking governs how much weight a claim carries, not whether
-  it's worth reading.
+**What I'd want and don't have:** any non-vendor study of rental lead conversion, and
+whether Rentsync already has sanitized historical lead data — which would change the
+prototype's evaluation approach considerably.
 
 ---
 
 ## Sources
 
-- [MCP Specification — Authorization (2025-06-18)](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization)
-- [modelcontextprotocol/mcpb](https://github.com/modelcontextprotocol/mcpb)
-- [Chargebee MCP Servers (overview)](https://www.chargebee.com/docs/billing/2.0/ai-in-chargebee/chargebee-mcp)
-- [Chargebee Data Lookup MCP Server (auth detail)](https://www.chargebee.com/docs/billing/2.0/ai-in-chargebee/data-lookup-agent)
-- [neondatabase/add-mcp](https://github.com/neondatabase/add-mcp)
-- [Arvid Kahl on X, 2026-08-23 — "adding an MCP to your product ... is a single prompt"](https://x.com/arvidkahl/status/2091598550279037169)
-- RFCs referenced normatively by the spec: [8707](https://www.rfc-editor.org/rfc/rfc8707.html) · [9728](https://datatracker.ietf.org/doc/html/rfc9728) · [7591](https://datatracker.ietf.org/doc/html/rfc7591) · [8414](https://datatracker.ietf.org/doc/html/rfc8414) · [OAuth 2.1 draft-13](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-13)
+- [HUD 2024 guidance on the Fair Housing Act, tenant screening and algorithmic advertising — summary with quotations](https://www.consumerfinancialserviceslawmonitor.com/2024/05/hud-issues-guidance-on-applicability-of-the-fair-housing-act-to-tenant-screening-and-housing-related-advertising-that-relies-upon-algorithms-and-ai/)
+- [Ontario Human Rights Commission — Policy on human rights and rental housing](https://www.ohrc.on.ca/en/policy-human-rights-and-rental-housing)
+- [OHRC — Prohibited grounds of discrimination](https://www.ohrc.on.ca/en/human-rights-and-rental-housing-ontario-background-paper/prohibited-grounds-discrimination)
+- [Georgetown Law Poverty Journal — The Discriminatory Impacts of AI-Powered Tenant Screening Programs](https://www.law.georgetown.edu/poverty-journal/blog/the-discriminatory-impacts-of-ai-powered-tenant-screening-programs/)
+- [The Leadership Conference — AI + Tenant Screening](https://civilrights.org/resource/ai-tenant-screening/)
+- [Propmodo — What the Research on Lead Conversion Tells Us About AI's Role in Leasing](https://propmodo.com/what-the-research-on-lead-conversion-tells-us-about-ais-role-in-leasing/) *(cited as evidence about sourcing, not for its figures)*
