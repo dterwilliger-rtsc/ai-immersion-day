@@ -1,50 +1,46 @@
 # The short version (for the team channel)
 
-Quest step 4: *"Ask for the one-paragraph version and post it in your team channel."*
+Quest step 4: post the short version where the team will see it.
 
-Written to be read on a phone by teammates mid-decision, and to land the one point that
-changes what gets built rather than summarising everything.
-
----
-
-> Did some quick research on lead scoring since a few of us are keen — two things worth
-> knowing before we start.
->
-> **The industry's numbers are all vendor marketing.** "Respond in 5 minutes," "65–80%
-> drop-off after an hour," "44.8% conversion lift" — every one of those traces back to a
-> company selling an AI leasing tool. I chased the one article promising a research
-> review; it cites two vendors with no methodology or sample size, and its headline
-> statistic has no citation at all. Not necessarily wrong, but not something to build our
-> demo's claims on.
->
-> **More important: deciding who gets followed up is a regulated activity.** US fair
-> housing guidance from 2024 explicitly covers "limiting or denying consumers information
-> about housing opportunities" — which is what deprioritising a lead does — and it names
-> third-party tech providers as responsible, not just landlords. In Ontario it's more
-> direct: receipt of public assistance is a protected ground, and it covers *access to
-> rental opportunities*. The well-known cautionary case (SafeRent) wasn't malice, it was a
-> bug — the model didn't account for housing vouchers, and voucher holders skew heavily to
-> Black and Hispanic renters.
->
-> Two design choices that cost us nothing today and remove most of that risk: **score
-> actions people chose to take** (asked for a tour, replied twice, asked about parking)
-> **not attributes or proxies** (postal code, price band, income) — and frame the output as
-> **ordering the queue, never filtering anyone out**. Everyone still gets contacted; the
-> score changes the order. That also makes "explain why this lead scored high" the core
-> feature rather than a nice-to-have, which is already in the project brief.
->
-> Full notes and sources are linked if useful. Happy to own the fairness-testing piece if
-> we go this way.
+The project brief raises five questions under "Things to consider." This answers each in
+one sentence, which is what a team mid-decision can actually read. Everything else lives
+in [`briefing.md`](briefing.md).
 
 ---
 
-## Why it's shaped like that
+**What behaviours are good indicators of serious intent?**
+Actions that cost the person effort or commit them to a time, such as proposing a tour
+slot, replying a second time, or asking about parking or lease length; single page views
+and generic availability questions carry almost no information.
 
-- **Leads with the thing that changes the build**, not with a summary of everything found.
-- **Names specific numbers as unreliable** so nobody puts them on a demo slide.
-- **The regulatory point is framed as design guidance, not as a warning** — two concrete
-  choices, both free, rather than "we should be careful."
-- **Ends by volunteering for a specific piece of work.** Second day; better to offer to own
-  something narrow than to arrive with opinions about what everyone else should do.
-- **Doesn't tell the team which project to pick.** Four people already want this one. The
-  briefing informs the decision; making it isn't mine.
+**Should some signals carry more weight than others?**
+Yes, ordered by how much effort each action takes, kept simple and additive so anyone can
+read and change them, with a cap so no single signal can carry a lead on its own.
+
+**How should the system handle a new lead with limited information?**
+Return "insufficient signal" as its own state rather than a low score, and put new leads
+in the normal queue so the system does not quietly favour whoever has had the most time to
+browse.
+
+**How could the assessment inform follow-up without making inappropriate assumptions?**
+Score what people did rather than what they look like (no postal code, price band, or
+income proxies), make the output order the queue rather than filter anyone out, and always
+show the reasons.
+
+**How would you know if the scoring is useful?**
+Hand-label about 30 synthetic leads before scoring them and check the serious ones rank in
+the top third, then score pairs that differ only on an attribute linked to a protected
+ground and confirm the scores do not separate.
+
+---
+
+## Why it is shaped like this
+
+Earlier drafts were a briefing on lead scoring generally: the state of the evidence, the
+regulatory position, a cautionary case. All sourced, none of it usable by a team picking a
+project in the next few minutes.
+
+The project brief already states the five questions it wants answered. Answering those in
+one sentence each is more useful than research that arrives in its own shape and expects
+the reader to map it across. The reasoning still exists and is still sourced; it sits
+underneath rather than in front.

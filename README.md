@@ -34,26 +34,30 @@ turned out to be the most transferable lesson of the quest.
 → [prompt](quests/meeting-prep/prompt.md) · [output](quests/meeting-prep/brief-redacted.md)
 
 ### Research Assistant — 38 pts
-A sourced briefing on AI lead scoring for rental leads, commissioned and delivered inside
-the hour my team was choosing its build project in Slack — four of six had said they
-wanted that project and nobody had looked into the problem yet.
+Research on AI lead scoring for rental leads, delivered while the team was choosing its
+build project. The output is answers to the five questions the project brief itself raises
+under "Things to consider," one sentence each, with the sourced reasoning underneath.
 
-The load-bearing instruction was *"chase every statistic to its origin and tell me who
-published it and whether they were selling something."* It inverted the conclusion. The
-plan was to weight signals by the industry's conversion benchmarks; there are no credible
-public ones. Speed-to-lead, the five-minute window, the 65–80% hourly drop-off, a 44.8%
-lift — every figure traces to a company selling an AI leasing product, and the one trade
-article promising a research review cites two vendors with no methodology and leaves its
-headline number uncited. Reporting the absence beat laundering the numbers.
+Two things came out of the research. First, there is no credible public data to weight
+signals against: every conversion statistic in this space traces to a company selling an
+AI leasing product, and the one trade article promising a review of the research cites two
+vendors with no methodology and leaves its headline figure uncited. Second, prioritising
+leads is a regulated activity that reaches the vendor. HUD's 2024 guidance covers
+practices that limit or deny consumers information about housing opportunities, and holds
+third-party technology providers responsible alongside housing providers; in Ontario,
+receipt of public assistance is itself a protected ground covering access to rental
+opportunities.
 
-The finding I wasn't looking for was regulatory: US fair-housing guidance covers
-*"limiting or denying consumers information about housing opportunities"* — which is what
-deprioritising a lead does — and names third-party technology providers as responsible
-parties. In Ontario it's more direct still, since receipt of public assistance is itself a
-protected ground covering access to rental opportunities. That turns "explain the score"
-from a feature into the design's foundation.
+Together those changed the design advice: hand-set readable weights rather than learned
+ones, score chosen actions rather than attributes, order the queue rather than filter it,
+and test for parity as well as accuracy.
 
-→ [briefing](quests/research-assistant/briefing.md) · [prompt & method](quests/research-assistant/prompt.md) · [team version](quests/research-assistant/team-post.md)
+The process lesson was about shape rather than substance. The first two attempts were
+well-sourced briefings that nobody could use, one on the wrong topic entirely and one
+organised around my findings instead of the team's questions. Research that arrives in its
+own shape and expects the reader to map it across is research that does not get read.
+
+→ [answers and reasoning](quests/research-assistant/briefing.md) · [prompt & method](quests/research-assistant/prompt.md) · [team version](quests/research-assistant/team-post.md)
 
 ### Morning Nudge — 75 pts
 A scheduled task that DMs me on Slack every weekday at 8am with every mention and DM

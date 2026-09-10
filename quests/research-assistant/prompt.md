@@ -72,11 +72,24 @@ Two, per the quest, and the first one changed the recommendation:
 
 ## Output
 
-→ [`briefing.md`](briefing.md) — five findings, confidence marked individually, a
-build-time do/don't table, four-tier source ranking with vendor sources explicitly
-rejected, and four flagged unverified claims.
+→ [`briefing.md`](briefing.md) — one-sentence answers to each of the project brief's five
+"Things to consider" questions, with the sourced reasoning underneath, source reliability,
+and four flagged unverified claims.
 
-→ [`team-post.md`](team-post.md) — the short version for the team channel.
+→ [`team-post.md`](team-post.md) — the same five answers, sized for a team channel.
+
+## Two rewrites, and what they were for
+
+The first attempt researched a different topic entirely and produced something dense that
+the team had no use for. The second was on the right topic but organised around what I had
+found: state of the evidence, then regulation, then a cautionary case, then implications.
+Sourced, accurate, and still not usable by six people picking a project in the next few
+minutes.
+
+The project brief already lists the five questions it wants answered. Answering those
+directly, one sentence each, was worth more than a briefing that arrived in its own shape
+and expected the reader to do the mapping. The research did not change between the second
+and third versions. Only the order did, and only the third one was any use.
 
 ## Note on a discarded first attempt
 
