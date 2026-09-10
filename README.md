@@ -15,8 +15,9 @@ real-work subject matter.
 |---|---|---|---|---|
 | [Meeting Prep](quests/meeting-prep/) | Automations & Integrations | 25 | `quests/meeting-prep/` | ✅ Logged |
 | [Prompt Like a Pro](quests/prompt-like-a-pro/) | Discovery | 10 | `quests/prompt-like-a-pro/` | ✅ Logged |
+| [Sheet Whisperer](quests/sheet-whisperer/) | Automations & Integrations | 38 | `quests/sheet-whisperer/` | ✅ Logged |
 
-**Running total: 35 pts**
+**Running total: 73 pts** (a 1.5x multiplier was live for Sheet Whisperer — 25 base → 38)
 
 ### Meeting Prep — 25 pts
 Claude read the next real meeting via Google Calendar, opened the PDF attached to the
@@ -29,6 +30,23 @@ RSVP between two events — which is corrected in place and kept visible, becaus
 turned out to be the most transferable lesson of the quest.
 
 → [prompt](quests/meeting-prep/prompt.md) · [output](quests/meeting-prep/brief-redacted.md)
+
+### Sheet Whisperer — 38 pts
+Pointed Claude at a live integrations knowledge base in Drive — no export, no upload —
+and asked the open question rather than a directed one: *what don't I know about this
+file?*
+
+It found that **26 of 48 entries are missing the Entry ID the sheet's own instructions
+mark as required**, that ID'd and un-ID'd rows split perfectly along a second axis
+(original source text preserved vs. dropped) revealing two ingestion paths, that the
+date column holds both ISO strings and raw spreadsheet serials, and that Root Cause —
+the most valuable column in a troubleshooting KB — is filled on 7 of 48 rows.
+
+The near-miss is the lesson: the connector's first read was a ten-row **sample**, and
+the confident story available from it was wrong on every count. Pulling the full file
+changed the conclusions.
+
+→ [prompt](quests/sheet-whisperer/prompt.md) · [findings](quests/sheet-whisperer/findings-redacted.md)
 
 ### Prompt Like a Pro — 10 pts
 Same task (a first-day Slack intro) run twice: one line, then role + context + task +
