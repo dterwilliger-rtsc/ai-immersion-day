@@ -16,8 +16,9 @@ real-work subject matter.
 | [Meeting Prep](quests/meeting-prep/) | Automations & Integrations | 25 | `quests/meeting-prep/` | ✅ Logged |
 | [Prompt Like a Pro](quests/prompt-like-a-pro/) | Discovery | 10 | `quests/prompt-like-a-pro/` | ✅ Logged |
 | [Sheet Whisperer](quests/sheet-whisperer/) | Automations & Integrations | 38 | `quests/sheet-whisperer/` | ✅ Logged |
+| [Morning Nudge](quests/morning-nudge/) | Automations & Integrations | 75 | `quests/morning-nudge/` | ✅ Logged |
 
-**Running total: 73 pts** (a 1.5x multiplier was live for Sheet Whisperer — 25 base → 38)
+**Running total: 148 pts** (a 1.5x multiplier was live for the later quests — Sheet Whisperer 25→38, Morning Nudge 50→75)
 
 ### Meeting Prep — 25 pts
 Claude read the next real meeting via Google Calendar, opened the PDF attached to the
@@ -30,6 +31,28 @@ RSVP between two events — which is corrected in place and kept visible, becaus
 turned out to be the most transferable lesson of the quest.
 
 → [prompt](quests/meeting-prep/prompt.md) · [output](quests/meeting-prep/brief-redacted.md)
+
+### Morning Nudge — 75 pts
+A scheduled task that DMs me on Slack every weekday at 8am with every mention and DM
+still waiting on a reply. First run set for the next morning, so the proof is waking up
+to it working.
+
+The cron expression was the easy part. The quest is the **tuning**, and two things came
+out of it: Slack *search alone under-reports* (a search for my own user ID returned
+nothing, and `to:me` returned only messages I'd sent), so the task enumerates DM
+channels and reads them directly. And the naive pass produced 1 true positive against 5
+categories of false positive — join notices, bot DMs, already-answered threads,
+messages addressed to someone else, and broadcast FYIs — each of which became an
+explicit exclusion rule.
+
+The rule that nearly got missed found the only real item: **an open question put to a
+group, answered by others and not by me, counts.** A filter that only matched direct
+@-mentions would have skipped it.
+
+Tuned against a single quiet day, so the filters are the right shape but under-tested —
+noted in the writeup rather than claimed as proven.
+
+→ [writeup](quests/morning-nudge/prompt.md) · [live task prompt](quests/morning-nudge/task-prompt.md)
 
 ### Sheet Whisperer — 38 pts
 Pointed Claude at a live integrations knowledge base in Drive — no export, no upload —
