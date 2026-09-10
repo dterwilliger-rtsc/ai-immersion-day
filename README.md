@@ -35,12 +35,16 @@ before every meeting, and the follow-up drafted after.
 **One line:** Claude read my next meeting, opened the PDF attached to the invite
 to extract the real agenda, cross-referenced Slack and Drive for who I'd be
 talking to, and flagged a reporting-line contradiction across three systems plus
-an un-RSVP'd meeting happening the same day.
+an un-RSVP'd session next week.
 
 **Honest assessment:** the calendar layer alone would have produced a
 restatement of the invite. The value was entirely in the Drive/Gmail/Slack
 context layer — reading the attachment, and dating the organizer's own start
-from a Slack announcement. See the closing section of the output for detail.
+from a Slack announcement.
+
+It also got something wrong: it misattributed an RSVP status between two events
+on the same calendar. Corrected in the output, with the correction left visible
+rather than rewritten away. See the closing sections of the output for both.
 
 ---
 

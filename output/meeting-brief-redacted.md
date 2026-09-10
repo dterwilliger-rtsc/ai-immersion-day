@@ -63,15 +63,25 @@ expected within days of start.
 ## Rest of the week — prep flags
 | When | What | Status |
 |---|---|---|
-| Today | AI Immersion Day (team session) | ⚠️ **No RSVP from me.** Every other attendee but one has accepted. |
+| Today | AI Immersion Day (team session) | ✅ Accepted. One other attendee is still unresponded. |
 | Today | Hackathon, 11–6 | 🟡 In progress. Invite promised "more info to come" and never delivered — worth asking the organizer about submission format. |
-| Next Thu | [Optional] AI Open Forum, drop-in | 🟡 Explicitly for showcasing AI wins. **Good venue to demo this.** No RSVP yet. |
+| Next Thu | [Optional] AI Open Forum, drop-in | ⚠️ **No RSVP from me.** Explicitly for showcasing AI wins — **good venue to demo this.** |
 
 Nothing else on the calendar for the following 10 days.
 
 **Also unaddressed:** two unread Slack account-setup emails from the last 24h.
 
 ---
+
+## Correction (same day)
+
+The first version of this brief claimed I hadn't RSVP'd to today's team session.
+That was wrong — I had accepted; the unresponded attendee was someone else on the
+invite. The genuinely un-RSVP'd event was next week's optional AI forum. Caught by
+checking the calendar UI directly against the API response.
+
+Leaving the correction visible rather than quietly rewriting it, because "verify the
+brief against the source before you act on it" is the actual lesson of this quest.
 
 ## What actually earned its keep
 
@@ -83,10 +93,17 @@ Things I would not have had without the connectors:
    person running your orientation is ten weeks in changes how you read the session.
 3. **It caught a reporting-line contradiction across three systems** (IT email,
    welcome doc, calendar invite) that no single source would have shown.
-4. **It caught the missing RSVP** on a meeting happening the same day.
+4. **It caught a missing RSVP** on next week's optional AI forum — the one session
+   where this work would actually get seen.
 5. **The timezone math.** Core hours are stated in Eastern; I'm not in Eastern.
    It converted, then flagged it as the one decision actually mine to make.
 
-The failure mode worth noting: without the Drive and Gmail layer, this brief
-would have been a restatement of the calendar invite. The context layer is what
-turned it from a summary into something with action items.
+Two failure modes worth noting:
+
+- Without the Drive and Gmail layer, this brief would have been a restatement of
+  the calendar invite. The context layer is what turned it from a summary into
+  something with action items.
+- It misattributed an RSVP status between two events on the same calendar (see
+  the correction above). The per-attendee detail was right there in the API
+  response and still got read onto the wrong event — so the status lines are
+  exactly the part worth spot-checking before acting.
