@@ -1,0 +1,3 @@
+# Unredacted working output — contains colleague names, emails and internal HR detail.
+# Never commit. The redacted artifact in output/ is the public evidence.
+*.local.md
